@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<title>Nguyễn Duy Sơn - Đổi Tên TKQC</title>
+<html>
+
+<head>
+    <link href="https://fonts.googleapis.com/css?family=Roboto:100,300,400,500,700,900" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/@mdi/font@4.x/css/materialdesignicons.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/vuetify@2.x/dist/vuetify.min.css" rel="stylesheet">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, minimal-ui">
+</head>
+
+<body>
+    <div id="app">
+        <v-app>
+            <v-main>
+                <v-container>
+                    <v-row no-gutters>
+                        <v-col lg="8" offset-md="3">
+                            <v-card height="100%">
+                                <v-card-title class="blue white--text">
+                                    <span class="title">Đổi Tên Tài Khoản Quảng Cáo </span>
+                                    <v-spacer></v-spacer>
+                                </v-card-title>
+                                <v-card-text>
+                                    <v-row>
+                                        <v-col cols="12" class="mt-4">
+                                            <p class="mb-0">Token tài khoản giữ Ads</p>
+                                            <v-textarea name="input-7-1" @focus="$event.target.select()" v-model="token" outlined dense hide-details>
+                                            </v-textarea>
+
+                                        </v-col>
+                                        <v-col cols="12">
+                                            <p class="mb-0">Tên tài khoản muốn đổi thành</p>
+                                            <v-text-field class="mt-0" v-model="name" placeholder="Nhập tên">
+                                            </v-text-field>
+                                        </v-col>
+                                        <v-col cols="12" class="d-flex align-center px-0">
+                                            <v-col cols="12" sm="6">
+                                                <p class="mb-0">Số tài khoản 1 lần chạy</p>
+                                                <v-text-field class="mt-0" v-model="account" placeholder="Nhập số tài khoản">
+                                                </v-text-field>
+                                            </v-col>
+                                            <v-col cols="12" sm="6">
+                                                <p class="mb-0">Thời gian trì hoãn giữa các lần chạy (s)</p>
+                                                <v-text-field class="mt-0" v-model="delay" placeholder="Nhập số giây">
+                                                </v-text-field>
+                                            </v-col>
+                                        </v-col>
+                                        <v-col cols="12" class="d-flex align-center px-0 ml-3 my-0">
+                                            <div class="d-flex">
+                                                <v-btn :loading="loadingGetId" @click="getListAdsId()" color="primary" :disabled="!token" class="my-0">
+                                                    LẤY ADS ID
+                                                </v-btn>
+                                            </div>
+                                        </v-col>
+                                        <v-col cols="12">
+                                            <p class="mb-0">Danh sách Id tài khoản Ads</p>
+                                            <v-textarea name="input-7-1" @focus="$event.target.select()" v-model="listAdsInfo" outlined dense hide-details>
+                                            </v-textarea>
+                                        </v-col>
+                                        <v-col cols="12" class="d-flex align-center px-0 ml-3 my-0">
+                                            <div class="d-flex">
+                                                <v-btn :loading="loadingRename" @click="start()" color="primary" class="my-0">
+                                                    ĐỔI TÊN
+                                                </v-btn>
+                                            </div>
+                                        </v-col>
+                                        <v-col cols="12">
+                                            <p class="mb-0">Kết Quả</p>
+                                            <v-textarea name="input-7-1" @focus="$event.target.select()" v-model="result" outlined dense hide-details>
+                                            </v-textarea>
+                                        </v-col>
+                                    </v-row>
+                                </v-card-text>
+                            </v-card>
+                            <v-footer color="primary lighten-1" padless>
+                                <v-row justify="center" no-gutters>
+                                    <v-btn v-for="link in links" :key="link" color="white" text rounded class="my-2">
+                                        {{ link }}
+                                    </v-btn>
+                                    <v-col class="primary lighten-2 py-4 text-center white--text" cols="12">
+                                        {{ new Date().getFullYear() }} — <strong>Nguyễn Duy Sơn</strong>
+                                    </v-col>
+                                </v-row>
+                            </v-footer>
+                        </v-col>
+                    </v-row>
+
+                </v-container>
+
+            </v-main>
+        </v-app>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/vue@2.x/dist/vue.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vuetify@2.x/dist/vuetify.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script src="https://unpkg.com/vue-toastr/dist/vue-toastr.umd.min.js"></script>
+
+    <script>
+        //  Powered by Ztech.Asia
+        new Vue({
+            el: '#app',
+            vuetify: new Vuetify(),
+            data() {
+                return {
+                    token: '',
+                    listAdsInfo: '',
+                    name: 'Son',
+                    delay: 5,
+                    account: 5,
+                    result: '',
+                    loadingGetId: false,
+                    loadingRename: false,
+                    count: 0,
+                    listAdsIdLength: 0
+                }
+            },
+            methods: {
+                getListAdsId() {
+                    this.listAdsInfo = ''
+                    this.loadingGetId = true
+                    if (!this.token) return
+                    const url = `https://graph.facebook.com/v8.0/me/adaccounts?access_token=${this.token}&limit=5000`
+                    const axiosOption = {
+                        method: 'get',
+                        url
+                    }
+                    axios(axiosOption).then((result) => {
+                        if (result && result.data && result.data.data) {
+                            const listAds = result.data.data
+                            listAds.forEach(ads => {
+                                const {
+                                    id
+                                } = ads
+                                const adText = `${id.match(/\d/g).join("")}`
+                                this.listAdsInfo = `${this.listAdsInfo}${adText}\n`
+                            })
+                        }
+                        this.loadingGetId = false
+                        this.$toastr.s("Thành Công");
+                    }).catch((err) => {
+                        this.loadingGetId = false
+                        this.$toastr.e("Thất Bại");
+                    });
+
+                },
+
+                getListAdsIdFromString() {
+                    if (!this.listAdsInfo.trim())[]
+                    const listShareAds = this.listAdsInfo.trim().split('\n')
+                    const listAdsId = listShareAds.map((ads) => {
+                        return ads.trim()
+                    })
+                    return listAdsId
+                },
+
+                async start() {
+                    try {
+                        this.count = 0
+                        this.result = ''
+                        const listAdsId = this.getListAdsIdFromString()
+                        const chunks = this.chunkArray(listAdsId, this.account)
+                        this.loadingRename = true
+                        for (let chunk of chunks) {
+                            await this.renameListAd(chunk)
+                        }
+                    } catch (error) {
+
+                    }
+                    this.loadingRename = false;
+                    this.$toastr.s("Hoàn thành");
+                },
+
+                chunkArray(array, chunkSize) {
+                    const part = Math.ceil(array.length / chunkSize)
+                    const newArray = []
+                    for (let i = 0; i < part; i++) {
+                        const start = (i) * chunkSize
+                        const des = (i + 1 * chunkSize) > array.length ? array.length : ((i + 1) * chunkSize - 1)
+                        const myArray = [...array.slice(start, des + 1)]
+                        newArray.push(myArray)
+                    }
+                    return newArray
+                },
+
+                async renameListAd(list) {
+                    try {
+                        const proms = [];
+                        for (let adsId of list) {
+                            proms.push(this.renameOneAd(adsId))
+                        }
+                        await Promise.all(proms);
+                        const waitTime = this.delay * 1000
+                        this.result += `Wait ${this.delay}s \n`
+                        await this.sleep(waitTime)
+                    } catch (error) {
+
+                    }
+                },
+
+                async renameOneAd(adsId) {
+                    return new Promise(async(resolve, reject) => {
+                        this.count++;
+                        try {
+                            const url = `https://graph.facebook.com/v9.0/act_${adsId}?access_token=${this.token}`
+                            const name = `${this.name}-${this.count}`
+                            const axiosOption = {
+                                method: 'post',
+                                url,
+                                data: {
+                                    name
+                                }
+                            }
+                            const response = await axios(axiosOption)
+                            if (response && response.data && response.data.success) {
+                                this.result = `${this.result}${adsId} | ${name} | Thành công\n`
+                            }
+                            resolve(true)
+                        } catch (error) {
+                            this.result = `${this.result}${adsId} | ${name} | Thất bại\n`
+                            resolve(true)
+                        }
+                    });
+                },
+                sleep(milliseconds) {
+                    return new Promise((resolve, reject) => {
+                        setTimeout(() => {
+                            resolve()
+                        }, milliseconds);
+                    });
+                }
+
+            },
+            watch: {
+                // count: function (val) {
+                //     if (val && val == this.getListAdsIdFromString()) {
+                //         this.$toastr.s("Hoàn thành");
+                //         this.loadingPermission = false
+                //     }
+                // }
+            }
+        })
+    </script>
+</body>
+
+</html>
